@@ -1,0 +1,2 @@
+*********Error Log*******
+Lex Error: [Line: 4, Column: 2 in in.txt]: 
