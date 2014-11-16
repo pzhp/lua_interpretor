@@ -41,6 +41,7 @@ Dictinary::Dictinary()
 	addToken("<",       std::make_tuple(TokenValue::V_Less,         TokenType::T_Operators, -1));
 	addToken(">",       std::make_tuple(TokenValue::V_Greater,      TokenType::T_Operators, -1));
 	addToken("=",       std::make_tuple(TokenValue::V_Assign,       TokenType::T_Operators, -1));
+
 	addToken("(",       std::make_tuple(TokenValue::V_LeftParen,    TokenType::T_Delimiter, -1));
 	addToken(")",       std::make_tuple(TokenValue::V_RightParen,   TokenType::T_Delimiter, -1));
 	addToken("[",       std::make_tuple(TokenValue::V_LeftSquare,   TokenType::T_Delimiter, -1));

@@ -1,3 +1,5 @@
+#ifndef AST_EXPR_H__
+#define AST_EXPR_H__
 
 #include "ast_node.h"
 
@@ -27,6 +29,7 @@ namespace lua_in
 		{}
 	private:
 		bool m_value;
+		static std::string m_grammar;
 	};
 
 	class AST_String :public AST_Exp
@@ -56,6 +59,8 @@ namespace lua_in
 		AST_3Dot(size_t beg) :
 			AST_Exp(beg, beg)
 		{}
+	private:
+		static std::string m_grammar;
 	};
 
 	class AST_LambFunDef :public AST_Exp
@@ -64,7 +69,9 @@ namespace lua_in
 	public:
 		AST_LambFunDef(AST_FunBody* pf, size_t beg, size_t end) :
 			m_pFunbody(pf), AST_Exp(beg, end)
-		{}
+		{
+			m_pFunbody->SetParent(this);
+		}
 	private:
 		AST_FunBody* m_pFunbody;
 	};
@@ -88,15 +95,16 @@ namespace lua_in
 		{}
 	};
 
-	class AST_Var_Name :public AST_Var
+	class AST_Name :public AST_Var
 	{
 		/* var ::=  Name | prefixexp ¡®[¡¯ exp ¡®]¡¯ | prefixexp ¡®.¡¯ Name */
 	public:
-		AST_Var_Name(AST_Name* pn, size_t beg, size_t end) :
-			m_pName(pn), AST_Var(beg, end)
-		{}
+		AST_Name(std::string nm, size_t beg) :
+			m_name(nm), AST_Var(beg, beg)
+		{
+		}
 	private:
-		AST_Name* m_pName;
+		std::string m_name;
 	};
 
 	class AST_Var_Brack :public AST_Var
@@ -134,6 +142,7 @@ namespace lua_in
 		{}
 	private:
 		AST_Exp* m_pExp;
+		static std::string m_grammar;
 	};
 	/**** prefixexp  begin ***********/
 
@@ -158,6 +167,7 @@ namespace lua_in
 		AST_Exp* m_pLeft;
 		AST_Exp* m_pright;
 		AST_BiOp* m_pOP;
+		static std::string m_grammar;
 	};
 
 	class AST_UnExpr :public AST_Exp
@@ -172,3 +182,5 @@ namespace lua_in
 	};
 
 }
+
+#endif // !AST_EXPR_H__

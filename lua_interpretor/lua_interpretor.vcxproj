@@ -76,17 +76,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ast_expr.cpp" />
+    <ClCompile Include="ast_stat.cpp" />
     <ClCompile Include="dictinary.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parser.cpp" />
     <ClCompile Include="scanner.cpp" />
-    <ClCompile Include="Token.cpp" />
+    <ClCompile Include="ast_node.cpp" />
+    <ClCompile Include="token.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ast_expr.h" />
+    <ClInclude Include="ast_stat.h" />
     <ClInclude Include="dictinary.h" />
     <ClInclude Include="error.h" />
+    <ClInclude Include="parser.h" />
     <ClInclude Include="scanner.h" />
-    <ClInclude Include="Token.h" />
+    <ClInclude Include="ast_node.h" />
+    <ClInclude Include="token.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

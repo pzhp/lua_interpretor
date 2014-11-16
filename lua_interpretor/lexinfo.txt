@@ -24,8 +24,8 @@ Lex: [Line:   14, Column:    4 in in.txt]	b
 Lex: [Line:   14, Column:    7 in in.txt]	12c       		>> Error: cannot recognise number
 Lex: [Line:   15, Column:    1 in in.txt]	...       
 Lex: [Line:   16, Column:    1 in in.txt]	..        
-Lex: [Line:   17, Column:    1 in in.txt]	printhasdfadshfasadf
-Lex: [Line:   17, Column:   22 in in.txt]	(         
-Lex: [Line:   17, Column:   23 in in.txt]	a         
-Lex: [Line:   17, Column:   25 in in.txt]	)         
+Lex: [Line:   17, Column:    1 in in.txt]	printfasadf
+Lex: [Line:   17, Column:   13 in in.txt]	(         
+Lex: [Line:   17, Column:   14 in in.txt]	a         
+Lex: [Line:   17, Column:   16 in in.txt]	)         
 Lex: [Line:   18, Column:    1 in in.txt]	EOF       

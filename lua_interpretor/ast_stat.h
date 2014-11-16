@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ast_node.h"
+#include "ast_expr.h"
 
 namespace lua_in
 {
@@ -15,27 +16,27 @@ namespace lua_in
 		{}
 	};
 
-	class AST_SemiCol :public AST_Stat
+	class AST_StatDelim :public AST_Stat
 	{
 	public:
-		AST_SemiCol(size_t beg, size_t end) : AST_Stat(beg, end){}
+		AST_StatDelim(size_t beg) : AST_Stat(beg, beg){}
 	};
 
 	class AST_AssignStat :public AST_Stat
 	{
 	public:
-		AST_AssignStat(AST_VarList* pvar, AST_ExpList* pexp, AST_Operator* pop, size_t beg, size_t end) :
-			m_varlist(pvar), m_explist(pexp), m_operator(pop), AST_Stat(beg, end)
+		AST_AssignStat(AST_VarList* pvar, AST_ExpList* pexp, size_t beg, size_t end) :
+			m_varlist(pvar), m_explist(pexp), AST_Stat(beg, end)
 		{}
 
 	private:
 		AST_VarList* m_varlist;
 		AST_ExpList* m_explist;
-		AST_Operator* m_operator;
+		static std::string m_grammar;
 	};
 
 	class AST_PrefixExp;
-	class AST_FunCall : virtual public AST_Stat, virtual public AST_PrefixExp
+	class AST_FunCall : public AST_Stat, public AST_PrefixExp
 	{
 		/* functioncall ::=  prefixexp args | prefixexp ¡®:¡¯ Name args */
 	public:
@@ -51,7 +52,8 @@ namespace lua_in
 	class AST_FunCallNoName : public AST_FunCall
 	{
 	public:
-		AST_FunCallNoName(AST_PrefixExp* sp, AST_Args sa, size_t beg, size_t end) :AST_FunCall(sp, sa, beg, end)
+		AST_FunCallNoName(AST_PrefixExp* sp, AST_Args* sa, size_t beg, size_t end) :
+			AST_FunCall(sp, sa, beg, end)
 		{}
 	};
 
@@ -65,13 +67,23 @@ namespace lua_in
 		AST_Name* m_sname;
 	};
 
+	class AST_Label : public AST_Stat
+	{
+	public:
+		AST_Label(AST_Name* sn, size_t beg, size_t end);
+
+	private:
+		AST_Name* m_sname;
+	};
+
 	class AST_Break : public AST_Stat
 	{
 	public:
-		AST_Break(size_t beg, size_t end) : AST_Stat(beg, end)
+		AST_Break(size_t beg) : AST_Stat(beg, beg)
 		{}
 
 	private:
+		static std::string m_grammar;
 	};
 
 	class AST_Goto :public AST_Stat
@@ -90,21 +102,27 @@ namespace lua_in
 	public:
 		AST_DoEnd(AST_Block* pb, size_t beg, size_t end) :
 			m_pBlock(pb), AST_Stat(beg, end)
-		{}
+		{
+			m_pBlock->SetParent(this);
+		}
 	private:
 		AST_Block* m_pBlock;
+		static std::string m_grammar;
 	};
 
 	class AST_While : public AST_Stat
 	{
 	public:
-		AST_While(AST_Exp* ep, AST_Block* pb, size_t beg, size_t end) :
-			m_pExp(ep), m_pBlock(pb), AST_Stat(beg, end)
-		{}
+		AST_While(AST_Exp* ep, AST_DoEnd* pb, size_t beg, size_t end) :
+			m_pExp(ep), m_pDoEnd(pb), AST_Stat(beg, end)
+		{
+			m_pExp->SetParent(this);
+			m_pDoEnd->SetParent(this);
+		}
 
 	private:
 		AST_Exp* m_pExp;
-		AST_Block* m_pBlock;
+		AST_DoEnd* m_pDoEnd;
 	};
 
 	class AST_Repeat : public AST_Stat
@@ -112,12 +130,14 @@ namespace lua_in
 	public:
 		AST_Repeat(AST_Block* pb, AST_Exp* pe, size_t beg, size_t end) :
 			m_pBlock(pb), m_pExp(pe), AST_Stat(beg, end)
-		{ }
+		{ 
+			m_pBlock->SetParent(this);
+			m_pExp->SetParent(this);
+		}
 	private:
 		AST_Block* m_pBlock;
 		AST_Exp* m_pExp;
 	};
-	std::string AST_Repeat::m_descr = "'repeat block until exp'";
 
 
 	class AST_Condition :public AST_Stat
@@ -143,19 +163,23 @@ namespace lua_in
 		AST_Block* m_pBlock;
 		std::vector<AST_Elseif_Node*> m_vecElseif;
 		AST_Else_Node* m_pElse;
+		static std::string m_grammar;
 	};
-	std::string AST_Condition::m_descr = "if exp then block {elseif exp then block} [else block] end";
 
 	class AST_For3 :public AST_Stat
 	{
 	public:
-		AST_For3(std::string nm, AST_Exp* p1, AST_Exp* p2, AST_Exp* step, AST_DoEnd* pdoend, size_t beg, size_t end) :
+		AST_For3(AST_Name* nm, AST_Exp* p1, AST_Exp* p2, AST_Exp* step, AST_DoEnd* pdoend, size_t beg, size_t end) :
 			m_name(nm), m_p1(p1), m_p2(p2), m_pStep(step), m_pDoEnd(pdoend), AST_Stat(beg, end)
 		{
-
+			m_name->SetParent(this);
+			m_p1->SetParent(this);
+			m_p2->SetParent(this);
+			if (step) m_pStep->SetParent(this);
+			m_pDoEnd->SetParent(this);
 		}
 	private:
-		std::string m_name;
+		AST_Name* m_name;
 		AST_Exp* m_p1;
 		AST_Exp* m_p2;
 		AST_Exp* m_pStep;
@@ -169,7 +193,9 @@ namespace lua_in
 		AST_ForIn(AST_NameList* pnl, AST_ExpList* pel, AST_DoEnd* pdoend, size_t beg, size_t end) :
 			m_pNamelist(pnl), m_pExplist(pel), m_pDoEnd(pdoend), AST_Stat(beg, end)
 		{
-
+			m_pNamelist->SetParent(this);
+			m_pExplist->SetParent(this);
+			m_pDoEnd->SetParent(this);
 		}
 
 	private:
@@ -183,20 +209,24 @@ namespace lua_in
 	public:
 		AST_FunDef(AST_Name* nm, AST_FunBody* pf, size_t beg, size_t end) :
 			m_pName(nm), m_pFunbody(pf), AST_Stat(beg, end)
-		{}
+		{
+			m_pName->SetParent(this);
+			m_pFunbody->SetParent(this);
+		}
 
 	private:
 		AST_Name* m_pName;
 		AST_FunBody* m_pFunbody;
 	};
-	std::string AST_FunDef::m_descr = "function funcname funcbody";
 
 	class AST_Local_FunDef : public AST_Stat
 	{
 	public:
 		AST_Local_FunDef(AST_FunDef* pf, size_t beg, size_t end) :
 			m_pFundef(pf), AST_Stat(beg, end)
-		{}
+		{
+			m_pFundef->SetParent(this);
+		}
 	private:
 		AST_FunDef* m_pFundef;
 	};
@@ -206,7 +236,10 @@ namespace lua_in
 	public:
 		AST_Local_NameList(AST_NameList* pl, AST_ExpList* pe, size_t beg, size_t end) :
 			m_pNamelist(pl), m_pExplist(pe), AST_Stat(beg, end)
-		{}
+		{
+			m_pNamelist->SetParent(this);
+			m_pExplist->SetParent(this);
+		}
 	private:
 		AST_NameList* m_pNamelist;
 		AST_ExpList* m_pExplist;
